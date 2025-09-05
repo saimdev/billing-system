@@ -1,5 +1,6 @@
+// apps/backend/src/services/subscription.service.ts
 import { prisma } from '../lib/prisma.js';
-import { ApiError } from '../lib/api-error.ts';
+import { ApiError } from '../lib/api-error.js';
 import { addDays } from 'date-fns';
 
 interface CreateSubscriptionData {
@@ -17,16 +18,24 @@ interface SearchParams {
     limit: number;
     status?: string;
     customerId?: string;
+    q?: string;
 }
 
 class SubscriptionService {
     async list(tenantId: string, params: SearchParams) {
-        const { page, limit, status, customerId } = params;
+        const { page, limit, status, customerId, q } = params;
         const skip = (page - 1) * limit;
 
         const where: any = { tenantId };
         if (status) where.status = status;
         if (customerId) where.customerId = customerId;
+        if (q) {
+            where.OR = [
+                { username: { contains: q, mode: 'insensitive' } },
+                { mac: { contains: q, mode: 'insensitive' } },
+                { customer: { name: { contains: q, mode: 'insensitive' } } }
+            ];
+        }
 
         const [subscriptions, total] = await Promise.all([
             prisma.subscription.findMany({
@@ -55,6 +64,31 @@ class SubscriptionService {
                 pages: Math.ceil(total / limit)
             }
         };
+    }
+
+    async getById(tenantId: string, subscriptionId: string) {
+        const subscription = await prisma.subscription.findFirst({
+            where: { id: subscriptionId, tenantId },
+            include: {
+                customer: true,
+                plan: true,
+                invoices: {
+                    orderBy: { createdAt: 'desc' },
+                    take: 5
+                },
+                tickets: {
+                    where: { status: { not: 'CLOSED' } },
+                    orderBy: { createdAt: 'desc' },
+                    take: 5
+                }
+            }
+        });
+
+        if (!subscription) {
+            throw new ApiError('Subscription not found', 404);
+        }
+
+        return subscription;
     }
 
     async create(tenantId: string, data: CreateSubscriptionData) {
@@ -114,6 +148,45 @@ class SubscriptionService {
         });
     }
 
+    async update(tenantId: string, subscriptionId: string, data: Partial<CreateSubscriptionData>) {
+        const subscription = await prisma.subscription.findFirst({
+            where: { id: subscriptionId, tenantId }
+        });
+
+        if (!subscription) {
+            throw new ApiError('Subscription not found', 404);
+        }
+
+        // Check username uniqueness if being updated
+        if (data.username && data.username !== subscription.username) {
+            const existingSubscription = await prisma.subscription.findFirst({
+                where: { tenantId, username: data.username, id: { not: subscriptionId } }
+            });
+
+            if (existingSubscription) {
+                throw new ApiError('Username already exists', 400);
+            }
+        }
+
+        return prisma.subscription.update({
+            where: { id: subscriptionId },
+            data: {
+                ...(data.username !== undefined && { username: data.username }),
+                ...(data.mac !== undefined && { mac: data.mac }),
+                ...(data.accessType && { accessType: data.accessType as any }),
+                ...(data.autoRenew !== undefined && { autoRenew: data.autoRenew })
+            },
+            include: {
+                customer: {
+                    select: { name: true, phone: true, email: true }
+                },
+                plan: {
+                    select: { name: true, speedMbps: true, quotaGb: true, price: true }
+                }
+            }
+        });
+    }
+
     async updateStatus(tenantId: string, subscriptionId: string, status: string) {
         const subscription = await prisma.subscription.findFirst({
             where: { id: subscriptionId, tenantId }
@@ -137,6 +210,29 @@ class SubscriptionService {
                     select: { name: true }
                 }
             }
+        });
+    }
+
+    async delete(tenantId: string, subscriptionId: string) {
+        const subscription = await prisma.subscription.findFirst({
+            where: { id: subscriptionId, tenantId },
+            include: {
+                invoices: { where: { status: { in: ['PENDING', 'OVERDUE'] } } }
+            }
+        });
+
+        if (!subscription) {
+            throw new ApiError('Subscription not found', 404);
+        }
+
+        if (subscription.invoices.length > 0) {
+            throw new ApiError('Cannot delete subscription with pending invoices', 400);
+        }
+
+        // Soft delete by setting status to TERMINATED
+        await prisma.subscription.update({
+            where: { id: subscriptionId },
+            data: { status: 'TERMINATED' }
         });
     }
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
+import { clsx } from 'clsx';
 
 interface PaginationProps {
   currentPage: number;
@@ -10,6 +11,10 @@ interface PaginationProps {
 }
 
 export function Pagination({ currentPage, totalPages, onPageChange, className }: PaginationProps) {
+  if (totalPages <= 1) {
+    return null; // Don't show pagination if only one page
+  }
+
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   
   // Show only a subset of pages around current page

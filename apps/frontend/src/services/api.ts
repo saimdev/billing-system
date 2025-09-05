@@ -7,6 +7,22 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
+// Flag to prevent multiple refresh attempts
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
 // Request interceptor to add auth token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -20,8 +36,26 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // If already refreshing, queue this request
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
       const refreshToken = localStorage.getItem('refreshToken');
+      
       if (refreshToken) {
         try {
           const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
@@ -32,20 +66,34 @@ api.interceptors.response.use(
           localStorage.setItem('token', accessToken);
           localStorage.setItem('refreshToken', newRefreshToken);
           
+          processQueue(null, accessToken);
+          
           // Retry original request
-          error.config.headers.Authorization = `Bearer ${accessToken}`;
-          return api.request(error.config);
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          return api(originalRequest);
         } catch (refreshError) {
-          // Refresh failed, redirect to login
+          console.error('Token refresh failed:', refreshError);
+          processQueue(refreshError, null);
+          
+          // Only logout if we're not already on login page
+          if (window.location.pathname !== '/login') {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            window.location.href = '/login';
+          }
+        } finally {
+          isRefreshing = false;
+        }
+      } else {
+        // No refresh token, redirect to login only if not already there
+        if (window.location.pathname !== '/login') {
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
           window.location.href = '/login';
         }
-      } else {
-        // No refresh token, redirect to login
-        window.location.href = '/login';
       }
     }
+    
     return Promise.reject(error);
   }
 );

@@ -35,8 +35,7 @@ export function LoginPage() {
   });
 
   const onSubmit = async (data: LoginForm) => {
-    console.log('Form data:', data); // Check if data is being passed correctly
-  console.log('Form errors:', errors); // Check what errors exist
+    
     setLoading(true);
     try {
       await login(data.email, data.password, data.tenantSlug);

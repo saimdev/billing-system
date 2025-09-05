@@ -79,8 +79,13 @@ export function CustomersPage() {
     );
   }
 
-  const customers = data?.data || [];
-  const pagination = data?.pagination || { page: 1, pages: 1, total: 0 };
+  // Debug: Check if data is being received
+  console.log('Customers data:', data);
+  console.log('Raw data structure:', Object.keys(data || {}));
+
+  // Fix: data already contains the customers array
+  const customers = data || [];
+  const pagination = { page: 1, pages: 1, total: customers.length };
 
   return (
     <div className="space-y-6">
@@ -89,7 +94,7 @@ export function CustomersPage() {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Customers</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Manage your customer database and subscriptions
+            Manage your customer database and subscriptions ({customers.length} total)
           </p>
         </div>
         <div className="flex space-x-2">
@@ -145,7 +150,7 @@ export function CustomersPage() {
 
       {/* Customer List */}
       <Card>
-        {customers.length === 0 ? (
+        {!customers || customers.length === 0 ? (
           <EmptyState
             icon={<MagnifyingGlassIcon className="h-12 w-12" />}
             title="No customers found"
@@ -158,81 +163,83 @@ export function CustomersPage() {
           />
         ) : (
           <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableCell header>Customer</TableCell>
-                  <TableCell header>Contact</TableCell>
-                  <TableCell header>Subscriptions</TableCell>
-                  <TableCell header>Status</TableCell>
-                  <TableCell header>Created</TableCell>
-                  <TableCell header>Actions</TableCell>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {customers.map((customer: any) => (
-                  <TableRow 
-                    key={customer.id} 
-                    clickable 
-                    onClick={() => navigate(`/customers/${customer.id}`)}
-                  >
-                    <TableCell>
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          {customer.name}
-                        </div>
-                        {customer.cnic && (
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            CNIC: {customer.cnic}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="text-sm text-gray-900 dark:text-white">
-                          {customer.phone}
-                        </div>
-                        {customer.email && (
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {customer.email}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div className="text-gray-900 dark:text-white">
-                          {customer._count?.subscriptions || 0} active
-                        </div>
-                        <div className="text-gray-500 dark:text-gray-400">
-                          {customer._count?.tickets || 0} tickets
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(customer.status)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(customer.createdAt).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        to={`/customers/${customer.id}`}
-                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        View
-                      </Link>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableCell header>Customer</TableCell>
+                    <TableCell header>Contact</TableCell>
+                    <TableCell header>Subscriptions</TableCell>
+                    <TableCell header>Status</TableCell>
+                    <TableCell header>Created</TableCell>
+                    <TableCell header>Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {customers.map((customer: any) => (
+                    <TableRow 
+                      key={customer.id} 
+                      clickable 
+                      onClick={() => navigate(`/customers/${customer.id}`)}
+                    >
+                      <TableCell>
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {customer.name}
+                          </div>
+                          {customer.cnic && (
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              CNIC: {customer.cnic}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="text-sm text-gray-900 dark:text-white">
+                            {customer.phone}
+                          </div>
+                          {customer.email && (
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {customer.email}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          <div className="text-gray-900 dark:text-white">
+                            {customer._count?.subscriptions || 0} active
+                          </div>
+                          <div className="text-gray-500 dark:text-gray-400">
+                            {customer._count?.tickets || 0} tickets
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(customer.status)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {new Date(customer.createdAt).toLocaleDateString()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          to={`/customers/${customer.id}`}
+                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          View
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
-            {pagination.pages > 1 && (
+            {pagination && pagination.pages > 1 && (
               <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
                 <Pagination
                   currentPage={pagination.page}

@@ -20,7 +20,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableCell } from '../../components/ui/Table';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Modal } from '../../components/ui/Modal';
-import { FormField, Label, Textarea } from '../../components/ui/Form';
+import { FormField, Input, Label, Textarea } from '../../components/ui/Form';
 import { customerPortalApi } from '../../services/api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
