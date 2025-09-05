@@ -18,8 +18,8 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Modal } from '../../components/ui/Modal';
 import { customersApi } from '../../services/api';
-import { CreateCustomerForm } from '../../components/customers/CreateCustomerForm';
-import { ImportCustomersModal } from '../../components/customers/ImportCustomersModal';
+import { CreateCustomerForm } from './CreateCustomerForm';
+import { ImportCustomersModal } from './ImportCustomersModal';
 import toast from 'react-hot-toast';
 
 export function CustomersPage() {

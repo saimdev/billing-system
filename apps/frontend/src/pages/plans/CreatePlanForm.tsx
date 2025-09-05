@@ -2,8 +2,8 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '../ui/Button';
-import { FormField, Label, Input, Textarea } from '../ui/Form';
+import { Button } from '@/components/ui/Button';
+import { FormField, Label, Input } from '@/components/ui/Form';
 import { plansApi } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -89,9 +89,7 @@ export function CreatePlanForm({ plan, onSuccess, onCancel }: CreatePlanFormProp
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <FormField>
-        <Label htmlFor="name" required>
-          Plan Name
-        </Label>
+        <Label htmlFor="name" required>Plan Name</Label>
         <Input
           {...register('name')}
           placeholder="e.g., Basic 25Mbps, Premium 100Mbps"
@@ -101,9 +99,7 @@ export function CreatePlanForm({ plan, onSuccess, onCancel }: CreatePlanFormProp
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField>
-          <Label htmlFor="speedMbps">
-            Speed (Mbps)
-          </Label>
+          <Label htmlFor="speedMbps">Speed (Mbps)</Label>
           <Input
             {...register('speedMbps', { valueAsNumber: true })}
             type="number"
@@ -113,9 +109,7 @@ export function CreatePlanForm({ plan, onSuccess, onCancel }: CreatePlanFormProp
         </FormField>
 
         <FormField>
-          <Label htmlFor="quotaGb">
-            Monthly Quota (GB)
-          </Label>
+          <Label htmlFor="quotaGb">Monthly Quota (GB)</Label>
           <Input
             {...register('quotaGb', { valueAsNumber: true })}
             type="number"
@@ -127,9 +121,7 @@ export function CreatePlanForm({ plan, onSuccess, onCancel }: CreatePlanFormProp
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <FormField>
-          <Label htmlFor="price" required>
-            Price ($)
-          </Label>
+          <Label htmlFor="price" required>Price ($)</Label>
           <Input
             {...register('price', { valueAsNumber: true })}
             type="number"
@@ -140,9 +132,7 @@ export function CreatePlanForm({ plan, onSuccess, onCancel }: CreatePlanFormProp
         </FormField>
 
         <FormField>
-          <Label htmlFor="durationDays" required>
-            Duration (Days)
-          </Label>
+          <Label htmlFor="durationDays" required>Duration (Days)</Label>
           <Input
             {...register('durationDays', { valueAsNumber: true })}
             type="number"
@@ -152,9 +142,7 @@ export function CreatePlanForm({ plan, onSuccess, onCancel }: CreatePlanFormProp
         </FormField>
 
         <FormField>
-          <Label htmlFor="taxRate">
-            Tax Rate (%)
-          </Label>
+          <Label htmlFor="taxRate">Tax Rate (%)</Label>
           <Input
             {...register('taxRate', { valueAsNumber: true })}
             type="number"
@@ -180,9 +168,7 @@ export function CreatePlanForm({ plan, onSuccess, onCancel }: CreatePlanFormProp
         {fupEnabled && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField>
-              <Label htmlFor="fupThreshold">
-                FUP Threshold (GB)
-              </Label>
+              <Label htmlFor="fupThreshold">FUP Threshold (GB)</Label>
               <Input
                 {...register('fupThreshold', { valueAsNumber: true })}
                 type="number"
@@ -192,9 +178,7 @@ export function CreatePlanForm({ plan, onSuccess, onCancel }: CreatePlanFormProp
             </FormField>
 
             <FormField>
-              <Label htmlFor="fupReducedSpeed">
-                Reduced Speed (Mbps)
-              </Label>
+              <Label htmlFor="fupReducedSpeed">Reduced Speed (Mbps)</Label>
               <Input
                 {...register('fupReducedSpeed', { valueAsNumber: true })}
                 type="number"

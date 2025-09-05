@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '../ui/Button';
-import { FormField, Label, Input, Select } from '../ui/Form';
+import { Button } from '@/components/ui/Button';
+import { FormField, Label, Input, Select } from '@/components/ui/Form';
 import { invoicesApi } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -52,9 +52,7 @@ export function SendInvoiceModal({ invoice, onClose }: SendInvoiceModalProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <FormField>
-        <Label htmlFor="method" required>
-          Send Method
-        </Label>
+        <Label htmlFor="method" required>Send Method</Label>
         <Select {...register('method')} error={errors.method?.message}>
           <option value="email">Email</option>
           <option value="sms">SMS</option>

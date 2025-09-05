@@ -18,7 +18,7 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Modal } from '../../components/ui/Modal';
 import { ticketsApi } from '../../services/api';
-import { CreateTicketForm } from '../../components/tickets/CreateTicketForm';
+import { CreateTicketForm } from './CreateTicketForm';
 
 export function TicketsPage() {
   const [currentPage, setCurrentPage] = useState(1);

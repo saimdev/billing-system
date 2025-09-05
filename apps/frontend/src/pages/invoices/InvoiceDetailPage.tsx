@@ -15,7 +15,7 @@ import { Table, TableHeader, TableBody, TableRow, TableCell } from '../../compon
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Modal } from '../../components/ui/Modal';
 import { invoicesApi } from '../../services/api';
-import { SendInvoiceModal } from '../../components/invoices/SendInvoiceModal';
+import { SendInvoiceModal } from './SendInvoiceModal';
 
 export function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();

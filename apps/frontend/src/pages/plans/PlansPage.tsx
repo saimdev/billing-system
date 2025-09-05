@@ -14,7 +14,7 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Modal } from '../../components/ui/Modal';
 import { plansApi } from '../../services/api';
-import { CreatePlanForm } from '../../components/plans/CreatePlanForm';
+import { CreatePlanForm } from './CreatePlanForm';
 import toast from 'react-hot-toast';
 
 export function PlansPage() {

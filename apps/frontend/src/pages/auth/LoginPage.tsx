@@ -30,10 +30,13 @@ export function LoginPage() {
     handleSubmit,
     formState: { errors }
   } = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema)
+    resolver: zodResolver(loginSchema),
+    mode: 'onSubmit' // Only validate on submit, not on change
   });
 
   const onSubmit = async (data: LoginForm) => {
+    console.log('Form data:', data); // Check if data is being passed correctly
+  console.log('Form errors:', errors); // Check what errors exist
     setLoading(true);
     try {
       await login(data.email, data.password, data.tenantSlug);
@@ -93,11 +96,13 @@ export function LoginPage() {
                   autoComplete="current-password"
                   placeholder="Enter your password"
                   error={errors.password?.message}
+                  className="pr-10"
                 />
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="h-5 w-5 text-gray-400" />

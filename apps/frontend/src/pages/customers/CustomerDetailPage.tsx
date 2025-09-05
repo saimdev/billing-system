@@ -21,7 +21,7 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Modal } from '../../components/ui/Modal';
 import { customersApi } from '../../services/api';
-import { CreateSubscriptionForm } from '../../components/subscriptions/CreateSubscriptionForm';
+import { CreateSubscriptionForm } from '../subscriptions/CreateSubscriptionForm';
 
 export function CustomerDetailPage() {
   const { id } = useParams<{ id: string }>();

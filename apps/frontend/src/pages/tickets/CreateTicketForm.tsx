@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '../ui/Button';
-import { FormField, Label, Input, Select, Textarea } from '../ui/Form';
-import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { Button } from '@/components/ui/Button';
+import { FormField, Label, Input, Select, Textarea } from '@/components/ui/Form';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { customersApi, ticketsApi } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -68,9 +68,7 @@ export function CreateTicketForm({ onSuccess, onCancel }: CreateTicketFormProps)
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <FormField>
-        <Label htmlFor="subject" required>
-          Subject
-        </Label>
+        <Label htmlFor="subject" required>Subject</Label>
         <Input
           {...register('subject')}
           placeholder="Brief description of the issue"
@@ -80,9 +78,7 @@ export function CreateTicketForm({ onSuccess, onCancel }: CreateTicketFormProps)
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField>
-          <Label htmlFor="category" required>
-            Category
-          </Label>
+          <Label htmlFor="category" required>Category</Label>
           <Select {...register('category')} error={errors.category?.message}>
             <option value="TECHNICAL">Technical</option>
             <option value="BILLING">Billing</option>
@@ -93,9 +89,7 @@ export function CreateTicketForm({ onSuccess, onCancel }: CreateTicketFormProps)
         </FormField>
 
         <FormField>
-          <Label htmlFor="priority" required>
-            Priority
-          </Label>
+          <Label htmlFor="priority" required>Priority</Label>
           <Select {...register('priority')} error={errors.priority?.message}>
             <option value="LOW">Low</option>
             <option value="MEDIUM">Medium</option>
@@ -106,9 +100,7 @@ export function CreateTicketForm({ onSuccess, onCancel }: CreateTicketFormProps)
       </div>
 
       <FormField>
-        <Label htmlFor="customerId">
-          Customer (optional)
-        </Label>
+        <Label htmlFor="customerId">Customer (optional)</Label>
         <Select {...register('customerId')} error={errors.customerId?.message}>
           <option value="">Select a customer</option>
           {customers?.data?.map((customer: any) => (
@@ -121,9 +113,7 @@ export function CreateTicketForm({ onSuccess, onCancel }: CreateTicketFormProps)
 
       {selectedCustomer?.subscriptions && selectedCustomer.subscriptions.length > 0 && (
         <FormField>
-          <Label htmlFor="subscriptionId">
-            Related Subscription (optional)
-          </Label>
+          <Label htmlFor="subscriptionId">Related Subscription (optional)</Label>
           <Select {...register('subscriptionId')} error={errors.subscriptionId?.message}>
             <option value="">Select a subscription</option>
             {selectedCustomer.subscriptions.map((subscription: any) => (
@@ -136,9 +126,7 @@ export function CreateTicketForm({ onSuccess, onCancel }: CreateTicketFormProps)
       )}
 
       <FormField>
-        <Label htmlFor="description" required>
-          Description
-        </Label>
+        <Label htmlFor="description" required>Description</Label>
         <Textarea
           {...register('description')}
           placeholder="Detailed description of the issue or request"

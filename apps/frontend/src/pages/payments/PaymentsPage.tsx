@@ -18,7 +18,7 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Modal } from '../../components/ui/Modal';
 import { paymentsApi } from '../../services/api';
-import { RecordPaymentForm } from '../../components/payments/RecordPaymentForm';
+import { RecordPaymentForm } from './RecordPaymentForm';
 
 export function PaymentsPage() {
   const [searchParams] = useSearchParams();

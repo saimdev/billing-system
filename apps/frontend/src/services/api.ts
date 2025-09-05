@@ -184,4 +184,144 @@ export const dashboardApi = {
     api.get('/dashboard/charts', { params: { type, period } }).then(handleResponse),
 };
 
+export const settingsApi = {
+  getAll: () =>
+    api.get('/settings').then(handleResponse),
+  
+  get: (key: string) =>
+    api.get(`/settings/${key}`).then(handleResponse),
+  
+  update: (key: string, value: any) =>
+    api.put(`/settings/${key}`, { value }).then(handleResponse),
+};
+
+// Subscriptions API
+export const subscriptionsApi = {
+  list: (params?: any) =>
+    api.get('/subscriptions', { params }).then(handleResponse),
+  
+  getById: (id: string) =>
+    api.get(`/subscriptions/${id}`).then(handleResponse),
+  
+  create: (data: any) =>
+    api.post('/subscriptions', data).then(handleResponse),
+  
+  update: (id: string, data: any) =>
+    api.patch(`/subscriptions/${id}`, data).then(handleResponse),
+  
+  updateStatus: (id: string, status: string) =>
+    api.patch(`/subscriptions/${id}/status`, { status }).then(handleResponse),
+  
+  delete: (id: string) =>
+    api.delete(`/subscriptions/${id}`),
+};
+
+// Payments API
+export const paymentsApi = {
+  list: (params?: any) =>
+    api.get('/payments', { params }).then(handleResponse),
+  
+  getById: (id: string) =>
+    api.get(`/payments/${id}`).then(handleResponse),
+  
+  record: (data: any) =>
+    api.post('/payments', data).then(handleResponse),
+  
+  refund: (id: string, amount: number, reason: string) =>
+    api.post(`/payments/${id}/refund`, { amount, reason }).then(handleResponse),
+  
+  generateReceipt: (id: string) =>
+    api.get(`/payments/${id}/receipt`, { responseType: 'blob' }),
+};
+
+// Tickets API
+export const ticketsApi = {
+  list: (params?: any) =>
+    api.get('/tickets', { params }).then(handleResponse),
+  
+  getById: (id: string) =>
+    api.get(`/tickets/${id}`).then(handleResponse),
+  
+  create: (data: any) =>
+    api.post('/tickets', data).then(handleResponse),
+  
+  update: (id: string, data: any) =>
+    api.patch(`/tickets/${id}`, data).then(handleResponse),
+  
+  addReply: (id: string, data: { body: string; attachments?: string[] }) =>
+    api.post(`/tickets/${id}/reply`, data).then(handleResponse),
+  
+  assign: (id: string, assignedUserId: string) =>
+    api.patch(`/tickets/${id}/assign`, { assignedUserId }).then(handleResponse),
+  
+  updateStatus: (id: string, status: string) =>
+    api.patch(`/tickets/${id}/status`, { status }).then(handleResponse),
+};
+
+// Reports API
+export const reportsApi = {
+  getDashboardStats: () =>
+    api.get('/reports/dashboard').then(handleResponse),
+  
+  getRevenueReport: (params?: any) =>
+    api.get('/reports/revenue', { params }).then(handleResponse),
+  
+  getCustomerReport: () =>
+    api.get('/reports/customers').then(handleResponse),
+  
+  getAgingReport: () =>
+    api.get('/reports/aging').then(handleResponse),
+};
+
+// Usage API
+export const usageApi = {
+  import: (data: any) =>
+    api.post('/usage/import', data).then(handleResponse),
+  
+  getBySubscription: (subscriptionId: string, period?: string) =>
+    api.get(`/usage/${subscriptionId}`, { params: { period } }).then(handleResponse),
+};
+
+// Users API
+export const usersApi = {
+  list: () =>
+    api.get('/users').then(handleResponse),
+  
+  getById: (id: string) =>
+    api.get(`/users/${id}`).then(handleResponse),
+  
+  create: (data: any) =>
+    api.post('/users', data).then(handleResponse),
+  
+  update: (id: string, data: any) =>
+    api.patch(`/users/${id}`, data).then(handleResponse),
+  
+  deactivate: (id: string) =>
+    api.delete(`/users/${id}`),
+};
+
+// Customer Portal API (separate endpoint or public API)
+export const customerPortalApi = {
+  getDashboard: () =>
+    api.get('/portal/dashboard').then(handleResponse),
+  
+  getUsage: (subscriptionId: string) =>
+    api.get(`/portal/usage/${subscriptionId}`).then(handleResponse),
+  
+  getInvoices: () =>
+    api.get('/portal/invoices').then(handleResponse),
+  
+  downloadInvoice: (invoiceId: string) =>
+    api.get(`/portal/invoices/${invoiceId}/pdf`, { responseType: 'blob' }),
+  
+  getTickets: () =>
+    api.get('/portal/tickets').then(handleResponse),
+  
+  createTicket: (data: any) =>
+    api.post('/portal/tickets', data).then(handleResponse),
+  
+  updateProfile: (data: any) =>
+    api.patch('/portal/profile', data).then(handleResponse),
+};
+
 export default api;

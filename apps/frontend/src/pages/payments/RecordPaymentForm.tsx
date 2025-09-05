@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '../ui/Button';
-import { FormField, Label, Input, Select, Textarea } from '../ui/Form';
-import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { Button } from '@/components/ui/Button';
+import { FormField, Label, Input, Select, Textarea } from '@/components/ui/Form';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { invoicesApi, paymentsApi } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -81,9 +81,7 @@ export function RecordPaymentForm({ preSelectedInvoiceId, onSuccess, onCancel }:
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <FormField>
-        <Label htmlFor="invoiceId">
-          Invoice (optional)
-        </Label>
+        <Label htmlFor="invoiceId">Invoice (optional)</Label>
         <Select {...register('invoiceId')} error={errors.invoiceId?.message}>
           <option value="">Select an invoice</option>
           {pendingInvoices?.data?.map((invoice: any) => (
@@ -99,9 +97,7 @@ export function RecordPaymentForm({ preSelectedInvoiceId, onSuccess, onCancel }:
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField>
-          <Label htmlFor="amount" required>
-            Amount
-          </Label>
+          <Label htmlFor="amount" required>Amount</Label>
           <Input
             {...register('amount', { valueAsNumber: true })}
             type="number"
@@ -112,9 +108,7 @@ export function RecordPaymentForm({ preSelectedInvoiceId, onSuccess, onCancel }:
         </FormField>
 
         <FormField>
-          <Label htmlFor="method" required>
-            Payment Method
-          </Label>
+          <Label htmlFor="method" required>Payment Method</Label>
           <Select {...register('method')} error={errors.method?.message}>
             <option value="CASH">Cash</option>
             <option value="BANK_TRANSFER">Bank Transfer</option>
@@ -125,9 +119,7 @@ export function RecordPaymentForm({ preSelectedInvoiceId, onSuccess, onCancel }:
         </FormField>
 
         <FormField>
-          <Label htmlFor="reference">
-            Reference Number
-          </Label>
+          <Label htmlFor="reference">Reference Number</Label>
           <Input
             {...register('reference')}
             placeholder="Transaction reference"
@@ -136,9 +128,7 @@ export function RecordPaymentForm({ preSelectedInvoiceId, onSuccess, onCancel }:
         </FormField>
 
         <FormField>
-          <Label htmlFor="receivedAt">
-            Received Date
-          </Label>
+          <Label htmlFor="receivedAt">Received Date</Label>
           <Input
             {...register('receivedAt')}
             type="date"
@@ -148,9 +138,7 @@ export function RecordPaymentForm({ preSelectedInvoiceId, onSuccess, onCancel }:
       </div>
 
       <FormField>
-        <Label htmlFor="notes">
-          Notes (optional)
-        </Label>
+        <Label htmlFor="notes">Notes (optional)</Label>
         <Textarea
           {...register('notes')}
           placeholder="Add any additional notes about this payment"
