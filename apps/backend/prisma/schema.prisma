@@ -1,0 +1,312 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../../data/app.sqlite"
+}
+
+model Tenant {
+  id           String   @id @default(uuid())
+  name         String
+  slug         String   @unique
+  brandingJson String?  // JSON for logo, colors, etc.
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  users          User[]
+  customers      Customer[]
+  plans          Plan[]
+  addons         Addon[]
+  invoices       Invoice[]
+  payments       Payment[]
+  tickets        Ticket[]
+  settings       Setting[]
+  devices        Device[]
+  usageCounters  UsageCounter[]
+  subscriptions  Subscription[]
+
+  @@map("tenants")
+}
+
+model User {
+  id       String   @id @default(uuid())
+  tenantId String
+  name     String
+  email    String
+  hash     String    // argon2 hashed password
+  role     String    @default("CASHIER") // Changed from enum
+  status   String    @default("ACTIVE")  // Changed from enum
+  lastLoginAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ticketMessages TicketMessage[]
+
+  @@unique([tenantId, email])
+  @@map("users")
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  cnic        String?       // National ID
+  phone       String
+  email       String?
+  addressJson String?       // JSON for address, geotag
+  status      String   @default("ACTIVE") // Changed from enum
+  documentsJson String?     // JSON array of uploaded docs
+  tagsJson    String?       // JSON array of tags
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscriptions Subscription[]
+  tickets       Ticket[]
+
+  @@unique([tenantId, phone])
+  @@index([tenantId, status])
+  @@index([tenantId, name])
+  @@map("customers")
+}
+
+model Plan {
+  id           String   @id @default(uuid())
+  tenantId     String
+  name         String
+  speedMbps    Int?     // Upload/Download speed
+  quotaGb      Int?     // Monthly quota (null = unlimited)
+  price        Float
+  durationDays Int      @default(30) // 30, 90, 365, etc.
+  taxRate      Float    @default(0.0) // percentage
+  fupJson      String?  // Fair Usage Policy rules
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscriptions Subscription[]
+
+  @@index([tenantId, isActive])
+  @@map("plans")
+}
+
+model Addon {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  code      String   // e.g., "STATIC_IP", "EXTRA_100GB"
+  price     Float
+  metaJson  String?  // Additional metadata
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@map("addons")
+}
+
+model Subscription {
+  id         String   @id @default(uuid())
+  tenantId   String
+  customerId String
+  planId     String
+  username   String?            // PPPoE username or hotspot user
+  mac        String?            // MAC address
+  accessType String   @default("PPPOE") // Changed from enum
+  status     String   @default("PENDING") // Changed from enum
+  autoRenew  Boolean  @default(true)
+  startedAt  DateTime?
+  endsAt     DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer      Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  plan          Plan           @relation(fields: [planId], references: [id])
+  invoices      Invoice[]
+  tickets       Ticket[]
+  usageCounters UsageCounter[]
+
+  @@unique([tenantId, username])
+  @@index([tenantId, status])
+  @@index([tenantId, customerId])
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id             String   @id @default(uuid())
+  tenantId       String
+  subscriptionId String?       // Can be null for one-time charges
+  customerId     String?       // Direct customer billing
+  number         String        // INV-{TENANT}-{YYYY}{MM}-{seq}
+  periodStart    DateTime?
+  periodEnd      DateTime?
+  subtotal       Float
+  taxAmount      Float         @default(0.0)
+  total          Float
+  status         String   @default("PENDING") // Changed from enum
+  dueDate        DateTime
+  paidAt         DateTime?
+  pdfUrl         String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+  items        InvoiceItem[]
+  payments     Payment[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id        String   @id @default(uuid())
+  invoiceId String
+  type      String   // Changed from enum
+  label     String
+  quantity  Float    @default(1.0)
+  unitPrice Float
+  amount    Float
+  createdAt DateTime @default(now())
+
+  // Relations
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  tenantId    String
+  invoiceId   String?       // Can be null for advance payments
+  customerId  String?       // Direct customer payments
+  method      String   // Changed from enum
+  reference   String?       // Bank ref, gateway txn id, etc.
+  amount      Float
+  status      String   @default("PENDING") // Changed from enum
+  receivedAt  DateTime @default(now())
+  notes       String?
+  receiptUrl  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
+
+  @@index([tenantId, status])
+  @@index([tenantId, receivedAt])
+  @@map("payments")
+}
+
+model Ticket {
+  id             String   @id @default(uuid())
+  tenantId       String
+  customerId     String?
+  subscriptionId String?
+  assignedUserId String?
+  subject        String
+  category       String   @default("TECHNICAL") // Changed from enum
+  priority       String   @default("MEDIUM") // Changed from enum
+  status         String   @default("OPEN") // Changed from enum
+  slaDueAt       DateTime?
+  resolvedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer     Customer?       @relation(fields: [customerId], references: [id])
+  subscription Subscription?   @relation(fields: [subscriptionId], references: [id])
+  messages     TicketMessage[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, priority])
+  @@map("tickets")
+}
+
+model TicketMessage {
+  id              String   @id @default(uuid())
+  ticketId        String
+  authorId        String?           // User ID if staff
+  authorType      String   // Changed from enum
+  body            String
+  attachmentsJson String?           // JSON array of file URLs
+  createdAt       DateTime @default(now())
+
+  // Relations
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User?  @relation(fields: [authorId], references: [id])
+
+  @@map("ticket_messages")
+}
+
+model UsageCounter {
+  id             String   @id @default(uuid())
+  tenantId       String
+  subscriptionId String
+  period         String   // YYYY-MM format
+  upBytes        BigInt   @default(0)
+  downBytes      BigInt   @default(0)
+  totalBytes     BigInt   @default(0)
+  sessions       Int      @default(0)
+  lastUpdatedAt  DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  // Relations
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, subscriptionId, period])
+  @@map("usage_counters")
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  tenantId  String
+  key       String   // e.g., "tax_settings", "email_config", "sms_config"
+  valueJson String   // JSON value
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key])
+  @@map("settings")
+}
+
+model Device {
+  id       String   @id @default(uuid())
+  tenantId String
+  vendor   String     // MikroTik, Huawei, Cisco, etc.
+  model    String
+  mgmtIp   String?    // Management IP
+  role     String   @default("ACCESS") // Changed from enum
+  metaJson String?    // Connection details, credentials, etc.
+  isActive Boolean    @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, role])
+  @@map("devices")
+}
